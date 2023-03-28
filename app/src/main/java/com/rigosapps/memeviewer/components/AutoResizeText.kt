@@ -23,7 +23,7 @@ fun AutoResizedText(
         mutableStateOf(false)
     }
 
-    val defaultFontSize = MaterialTheme.typography.body1.fontSize
+    val defaultFontSize = MaterialTheme.typography.h1.fontSize
 
     Text(
 

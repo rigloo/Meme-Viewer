@@ -4,12 +4,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.*
 
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -23,7 +20,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
@@ -179,25 +178,34 @@ fun DrawerItem(modifier: Modifier = Modifier, title: String, onDelete: () -> Uni
     val subredditViewModel = viewModel<SubredditViewModel>()
 
     Card(modifier.fillMaxWidth()) {
-        Box(modifier.fillMaxSize()) {
+        Row(modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly) {
 
-            Text(text = title, fontSize = 30.sp, modifier = Modifier.padding(8.dp))
-           // AutoResizedText(text = title, modifier = Modifier.fillMaxSize())
+            Box(modifier= Modifier.align(Alignment.CenterVertically).fillMaxWidth(.75f)) {
+                Text(text = title, fontSize = 30.sp, modifier = Modifier.padding(8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis )
+                 //AutoResizedText(text = title, )
+            }
 
-            IconButton(
 
-                onClick = onDelete,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(8.dp),
-            ) {
-                Icon(
 
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Add a Meme Source"
-                )
+            Box(modifier = Modifier.weight(1f)) {
+                IconButton(
+
+                    onClick = onDelete,
+                    modifier = Modifier
+
+                        .align(Alignment.CenterEnd)
+                        .padding(8.dp),
+                ) {
+                    Icon(
+
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Add a Meme Source"
+                    )
+
+                }
 
             }
+
 
         }
 
