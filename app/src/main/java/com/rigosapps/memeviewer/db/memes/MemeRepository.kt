@@ -22,7 +22,7 @@ class MemeRepository(private val memeDao: MemeDao) {
         memeDao.updateMeme(meme)
     }
 
-    suspend fun deleteImageItem(meme: MemeEntity) {
+    suspend fun deleteMeme(meme: MemeEntity) {
         memeDao.deleteMeme(meme)
     }
 

@@ -38,13 +38,12 @@ fun ImageCard(
     url: String,
     contentDescription: String,
     title: String,
-    author: String,
     modifier: Modifier = Modifier,
-
+    isFaved: Boolean,
     isGif: Boolean,
     onFav: () -> Unit,
 ) {
-    var isFaved by remember { mutableStateOf<Boolean>(false) }
+    var isFaved by remember { mutableStateOf<Boolean>(isFaved) }
     Card(
         modifier = modifier
             .fillMaxWidth(.5f)
@@ -55,7 +54,7 @@ fun ImageCard(
 
                     onDoubleTap = {
                         Timber.e("Double tap meme! Add to Fav database.")
-                        isFaved = true
+                        isFaved = !isFaved
                         onFav()
                     },
 

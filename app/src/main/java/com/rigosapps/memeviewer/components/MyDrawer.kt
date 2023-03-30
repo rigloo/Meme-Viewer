@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.plcoding.composeautoresizedtext.AutoResizedText
+import com.rigosapps.memeviewer.helpers.Constants
 import com.rigosapps.memeviewer.ui.theme.LightPurple
 import com.rigosapps.memeviewer.ui.theme.Pink
 import com.rigosapps.memeviewer.viewModels.MemeViewModel
@@ -134,7 +135,7 @@ fun DrawerBody(
                             .padding(5.dp)
                             .clickable {
 
-                                memeViewModel.fetchMemes(subreddit = it[index].title, count = 50)
+                                memeViewModel.fetchMemes(subreddit = it[index].title, count = Constants.FETCH_COUNT)
                                 dismissDrawer()
 
 

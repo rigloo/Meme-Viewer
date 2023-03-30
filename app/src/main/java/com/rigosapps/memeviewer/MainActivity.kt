@@ -18,6 +18,7 @@ import com.google.accompanist.pager.VerticalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.rigosapps.memeviewer.components.*
 import com.rigosapps.memeviewer.helpers.Categories
+import com.rigosapps.memeviewer.helpers.Constants
 import com.rigosapps.memeviewer.model.Subreddit
 import com.rigosapps.memeviewer.ui.theme.*
 import com.rigosapps.memeviewer.viewModels.MemeViewModel
@@ -68,10 +69,7 @@ fun MainScreen() {
 
     val pagerState = rememberPagerState()
 
-//    if (pagerState.currentPage == 50) {
-//        memeViewModel.generateMemes()
-//
-//    }
+
 
     if (dialogShown.value) {
 
@@ -91,7 +89,7 @@ fun MainScreen() {
                 toggleStates = listOf<String>(Categories.HOT, Categories.TOP, Categories.RANDOM),
                 onToggleChange = {
                     memeViewModel.category = it
-                    memeViewModel.fetchMemes(currentName, 50)
+                    memeViewModel.fetchMemes(currentName, Constants.FETCH_COUNT)
                 }
             )
         }, navigationIcon = {
@@ -135,9 +133,14 @@ fun MainScreen() {
         else
             VerticalPager(
 
+
                 count = memes.size,
             ) { page ->
                 // Our page content
+                Timber.e("Current Page: ${pagerState.currentPage}")
+//                if ( pagerState.currentPage == Constants.FETCH_COUNT + 1 )
+//                    memeViewModel.fe
+
 
                 Box(
                     contentAlignment = Alignment.Center,
@@ -151,7 +154,7 @@ fun MainScreen() {
                         url = memes[page].url,
                         contentDescription = memes[page].title,
                         title = memes[page].title,
-                        author = "",
+                        isFaved = memes[page].key != 0L,
 
                         modifier = Modifier.fillMaxSize(.99f),
                         isGif = memes[page].url.endsWith(".gif")
@@ -159,8 +162,10 @@ fun MainScreen() {
 
                     ) {
                         //onFav
-
-                        memeViewModel.addMeme(memes[page])
+                        if(memes[page].key == 0L)
+                            memeViewModel.addMeme(memes[page])
+                        else
+                            memeViewModel.deleteMeme(memes[page])
 
 
                     }

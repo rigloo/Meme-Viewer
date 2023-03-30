@@ -26,7 +26,7 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
 
     var memes by mutableStateOf(
-        listOf<MemeEntity>()
+        mutableListOf<MemeEntity>()
     )
         private set
 
@@ -70,8 +70,8 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun fetchMemes(subreddit: String, count: Int) {
-        when(category){
-            Categories.HOT -> fetchHotMemes(subreddit,count)
+        when (category) {
+            Categories.HOT -> fetchHotMemes(subreddit, count)
             Categories.RANDOM -> fetchRandomMemes(subreddit, count)
             Categories.TOP -> fetchTopMemes(subreddit, count)
 
@@ -108,8 +108,9 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
                 memes = response.body()!!.memes.map {
                     MemeToMemeEntity(it)
-                }
+                } as MutableList<MemeEntity>
                 currentSubreddit = subreddit
+                // memes.add(MemeEntity(key = -1, title = "", url = ""))
 
                 error = false
 
@@ -123,7 +124,7 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun fetchHotMemes(subreddit: String, count:Int){
+    fun fetchHotMemes(subreddit: String, count: Int) {
 
         isLoading = true
         //must check if in Hot, Random or Top mode and fetch accordingly
@@ -148,9 +149,11 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
             if (response.isSuccessful && response.body() != null) {
 
-                val onlyImages = response.body()!!.data.children.filter {
+                val onlyImages = response.body()!!.data.children.filter  {
 
-                    it.data.url.endsWith(".gif") ||  it.data.url.endsWith(".png") || it.data.url.endsWith(".jpg") || it.data.url.endsWith(".jpeg") &&
+                    (it.data.url.endsWith(".gif") || it.data.url.endsWith(".png") || it.data.url.endsWith(
+                        ".jpg"
+                    ) || it.data.url.endsWith(".jpeg")) &&
                             !it.data.stickied
 
 
@@ -160,8 +163,9 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
                 memes = onlyImages.map {
 
                     NewMemeToMemeEntity(it.data)
-                }
+                } as MutableList<MemeEntity>
                 currentSubreddit = subreddit
+                //memes.add(MemeEntity(key = -1, title = "", url = ""))
 
                 error = false
 
@@ -176,7 +180,8 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun fetchTopMemes(subreddit: String, count: Int){
+
+    fun fetchTopMemes(subreddit: String, count: Int) {
         isLoading = true
         //must check if in Hot, Random or Top mode and fetch accordingly
 
@@ -202,7 +207,9 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
                 val onlyImages = response.body()!!.data.children.filter {
 
-                    it.data.url.endsWith(".gif") ||  it.data.url.endsWith(".png") || it.data.url.endsWith(".jpg") || it.data.url.endsWith(".jpeg") &&
+                    (it.data.url.endsWith(".gif") || it.data.url.endsWith(".png") || it.data.url.endsWith(
+                        ".jpg"
+                    ) || it.data.url.endsWith(".jpeg")) &&
                             !it.data.stickied
 
 
@@ -211,8 +218,9 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
                 memes = onlyImages.map {
                     NewMemeToMemeEntity(it.data)
-                }
+                } as MutableList<MemeEntity>
                 currentSubreddit = subreddit
+                //memes.add(MemeEntity(key = -1, title = "", url = ""))
 
                 error = false
 
@@ -241,6 +249,7 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
         runBlocking {
             job.join()
+
         }
         Timber.e("Added new meme ${meme.title} with id $id")
         return id
@@ -250,13 +259,24 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
         val job = viewModelScope.async(Dispatchers.IO) {
 
-            memes = repository.readAllData
+            memes = repository.readAllData as MutableList<MemeEntity>
+            Timber.e("Memes")
 
         }
         runBlocking {
             job.join()
         }
         Timber.e("Stop here to look at fetched memes.")
+
+    }
+
+    fun deleteMeme(meme: MemeEntity) {
+
+        val job = viewModelScope.async(Dispatchers.IO) {
+
+            repository.deleteMeme(meme)
+
+        }
 
     }
 
