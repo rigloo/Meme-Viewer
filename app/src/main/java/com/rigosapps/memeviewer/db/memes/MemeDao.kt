@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.room.*
 
 import com.rigosapps.memeviewer.model.MemeEntity
+import kotlinx.coroutines.flow.Flow
+
 
 /*
 
@@ -15,7 +17,7 @@ The DAO for the ImageItem database. Provides methods to access , write, update a
 interface MemeDao {
 
     @Query("SELECT * FROM MemeEntity ORDER BY key DESC")
-    fun loadAll(): List<MemeEntity>
+    fun loadAll(): Flow<List<MemeEntity>>
 
     @Query("SELECT * FROM MemeEntity WHERE key = :memeId")
     fun loadMeme(memeId: Long): MemeEntity

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.plcoding.composeautoresizedtext.AutoResizedText
 import com.rigosapps.memeviewer.helpers.Constants
+import com.rigosapps.memeviewer.ui.theme.DarkPurple
 import com.rigosapps.memeviewer.ui.theme.LightPurple
 import com.rigosapps.memeviewer.ui.theme.Pink
 import com.rigosapps.memeviewer.viewModels.MemeViewModel
@@ -47,13 +49,13 @@ fun DrawerHeader(modifier: Modifier = Modifier) {
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .padding(10.dp)
-            .background(color = LightPurple)
-            .border(
-                border = BorderStroke(2.dp, Color.Transparent), shape = RoundedCornerShape(50),
+            .fillMaxWidth()
 
-                ),
+
+            .clip(shape = RoundedCornerShape(20.dp)).border(shape = RoundedCornerShape(20.dp), color = Color.Black, width = 2.dp )
+            .background(color = LightPurple),
+
         contentAlignment = Alignment.Center
 
     ) {
@@ -95,10 +97,6 @@ fun DrawerBody(
     val memeViewModel = viewModel<MemeViewModel>()
 
 
-    val viewModelStoreOwner = checkNotNull(LocalViewModelStoreOwner.current) {
-        "No ViewModelStoreOwner was provided via LocalViewModelStoreOwner"
-    }
-
     //val subredditViewModel = ViewModelProvider(viewModelStoreOwner).get(SubredditViewModel::class.java)
 
 
@@ -116,8 +114,7 @@ fun DrawerBody(
                 DrawerItemNonDelete(title = "Favorites", modifier = Modifier
                     .padding(5.dp)
                     .clickable {
-
-                        memeViewModel.fetchFavMemes()
+                        memeViewModel.toggleFavs(true)
                         dismissDrawer()
 
                     })
@@ -134,8 +131,11 @@ fun DrawerBody(
                         modifier = Modifier
                             .padding(5.dp)
                             .clickable {
-
-                                memeViewModel.fetchMemes(subreddit = it[index].title, count = Constants.FETCH_COUNT)
+                                memeViewModel.toggleFavs(false)
+                                memeViewModel.fetchMemes(
+                                    subreddit = it[index].title,
+                                    count = Constants.FETCH_COUNT
+                                )
                                 dismissDrawer()
 
 
@@ -181,9 +181,19 @@ fun DrawerItem(modifier: Modifier = Modifier, title: String, onDelete: () -> Uni
     Card(modifier.fillMaxWidth()) {
         Row(modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly) {
 
-            Box(modifier= Modifier.align(Alignment.CenterVertically).fillMaxWidth(.75f)) {
-                Text(text = title, fontSize = 30.sp, modifier = Modifier.padding(8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis )
-                 //AutoResizedText(text = title, )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .fillMaxWidth(.75f)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 30.sp,
+                    modifier = Modifier.padding(8.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                //AutoResizedText(text = title, )
             }
 
 

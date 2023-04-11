@@ -2,6 +2,7 @@ package com.rigosapps.memeviewer
 
 import ImageCard
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.*
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.VerticalPager
@@ -62,14 +64,22 @@ fun MainScreen() {
     val currentName = memeViewModel.currentSubreddit
     val error = memeViewModel.error
     val isLoading = memeViewModel.isLoading
-    val memes = memeViewModel.memes
+    val memes by memeViewModel.memes.collectAsState(
+        initial = emptyList()
+    )
+    val favMemes by memeViewModel.favMemes.collectAsState(
+        initial = emptyList()
+    )
+
+    val inFavs = memeViewModel.inFavs
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
 
     val pagerState = rememberPagerState()
 
-
+    val toShow = if (inFavs) favMemes
+    else memes
 
     if (dialogShown.value) {
 
@@ -84,14 +94,12 @@ fun MainScreen() {
 
     Scaffold(scaffoldState = scaffoldState, topBar = {
         TopAppBar(title = { Text(text = currentName) }, actions = {
-            MultiToggleButton(
-                currentSelection = memeViewModel.category,
+            MultiToggleButton(currentSelection = memeViewModel.category,
                 toggleStates = listOf<String>(Categories.HOT, Categories.TOP, Categories.RANDOM),
                 onToggleChange = {
                     memeViewModel.category = it
                     memeViewModel.fetchMemes(currentName, Constants.FETCH_COUNT)
-                }
-            )
+                })
         }, navigationIcon = {
 
 
@@ -130,49 +138,56 @@ fun MainScreen() {
 
         if (isLoading) MyProgressIndicator()
         else if (error) ErrorMessage()
-        else
-            VerticalPager(
+        else VerticalPager(
 
 
-                count = memes.size,
-            ) { page ->
-                // Our page content
-                Timber.e("Current Page: ${pagerState.currentPage}")
+            count = toShow.size,
+        ) { page ->
+            // Our page content
+            Timber.e("Current Page: ${pagerState.currentPage}")
 //                if ( pagerState.currentPage == Constants.FETCH_COUNT + 1 )
 //                    memeViewModel.fe
 
 
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            DarkColor
-                        ),
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        DarkColor
+                    ),
+            ) {
+                val context = LocalContext.current
+                ImageCard(
+                    url = toShow[page].url,
+                    contentDescription = toShow[page].title,
+                    title = toShow[page].title,
+                    isFaved = toShow[page].key != 0L,
+
+                    modifier = Modifier.fillMaxSize(.99f),
+                    isGif = toShow[page].url.endsWith(".gif")
+
+
                 ) {
-                    ImageCard(
-                        url = memes[page].url,
-                        contentDescription = memes[page].title,
-                        title = memes[page].title,
-                        isFaved = memes[page].key != 0L,
 
-                        modifier = Modifier.fillMaxSize(.99f),
-                        isGif = memes[page].url.endsWith(".gif")
-
-
-                    ) {
-                        //onFav
-                        if(memes[page].key == 0L)
-                            memeViewModel.addMeme(memes[page])
-                        else
-                            memeViewModel.deleteMeme(memes[page])
-
-
+                    //onFav
+                    if (toShow[page].key == 0L) {
+                        memeViewModel.addMeme(toShow[page])
+                        Toast.makeText(context, "Added meme to favorites!", Toast.LENGTH_SHORT)
+                            .show()
+                    } else {
+                        memeViewModel.deleteMeme(toShow[page])
+                        Toast.makeText(
+                            context, "Removed meme from favorites!", Toast.LENGTH_SHORT
+                        ).show()
                     }
+
 
                 }
 
             }
+
+        }
 
 
     }

@@ -5,13 +5,14 @@ import androidx.lifecycle.MutableLiveData
 import com.rigosapps.memeviewer.helpers.MemeToMemeEntity
 import com.rigosapps.memeviewer.model.MemeEntity
 import com.rigosapps.memeviewer.retroFit.RetrofitInstance
+import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
 
 class MemeRepository(private val memeDao: MemeDao) {
 
-    val readAllData: List<MemeEntity> = memeDao.loadAll()
+    val readAllData: Flow<List<MemeEntity>> = memeDao.loadAll()
 
     suspend fun addMeme(meme: MemeEntity): Long {
         return memeDao.insertMeme(meme)

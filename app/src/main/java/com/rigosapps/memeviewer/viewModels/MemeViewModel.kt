@@ -15,6 +15,9 @@ import com.rigosapps.memeviewer.model.MemeEntity
 import com.rigosapps.memeviewer.retroFit.RetrofitInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import retrofit2.HttpException
@@ -25,11 +28,22 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
     private lateinit var repository: MemeRepository
 
 
-    var memes by mutableStateOf(
-        mutableListOf<MemeEntity>()
-    )
-        private set
+//    var memes by mutableStateOf(
+//        mutableListOf<MemeEntity>()
+//    )
+//        private set
 
+    var memes = flow<List<MemeEntity>> {
+
+    }
+
+
+    var favMemes = flow<List<MemeEntity>> {
+
+    }
+    var inFavs by mutableStateOf(
+        false
+    )
 
     //one of Hot, Top, or Random
     var category by mutableStateOf(
@@ -59,12 +73,9 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
          */
 
 
-        val job = viewModelScope.async(Dispatchers.IO) {
-
-            val memeDao = MemeDatabase.getInstance(application).memeDao()
-            repository = MemeRepository(memeDao)
-
-        }
+        val memeDao = MemeDatabase.getInstance(application).memeDao()
+        repository = MemeRepository(memeDao)
+        favMemes = repository.readAllData
 
 
     }
@@ -106,9 +117,13 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
             if (response.isSuccessful && response.body() != null) {
 
 
-                memes = response.body()!!.memes.map {
-                    MemeToMemeEntity(it)
-                } as MutableList<MemeEntity>
+                memes = flow {
+
+                    emit(response.body()!!.memes.map {
+                        MemeToMemeEntity(it)
+                    })
+
+                }
                 currentSubreddit = subreddit
                 // memes.add(MemeEntity(key = -1, title = "", url = ""))
 
@@ -149,7 +164,7 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
             if (response.isSuccessful && response.body() != null) {
 
-                val onlyImages = response.body()!!.data.children.filter  {
+                val onlyImages = response.body()!!.data.children.filter {
 
                     (it.data.url.endsWith(".gif") || it.data.url.endsWith(".png") || it.data.url.endsWith(
                         ".jpg"
@@ -160,10 +175,14 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
 
-                memes = onlyImages.map {
+                memes = flow {
 
-                    NewMemeToMemeEntity(it.data)
-                } as MutableList<MemeEntity>
+                    emit(onlyImages.map {
+
+                        NewMemeToMemeEntity(it.data)
+                    })
+
+                }
                 currentSubreddit = subreddit
                 //memes.add(MemeEntity(key = -1, title = "", url = ""))
 
@@ -216,9 +235,11 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
 
-                memes = onlyImages.map {
-                    NewMemeToMemeEntity(it.data)
-                } as MutableList<MemeEntity>
+                memes = flow {
+                    emit(onlyImages.map {
+                        NewMemeToMemeEntity(it.data)
+                    })
+                }
                 currentSubreddit = subreddit
                 //memes.add(MemeEntity(key = -1, title = "", url = ""))
 
@@ -257,15 +278,12 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
     fun fetchFavMemes() {
 
-        val job = viewModelScope.async(Dispatchers.IO) {
 
-            memes = repository.readAllData as MutableList<MemeEntity>
-            Timber.e("Memes")
+        // memes = repository.readAllData
+        Timber.e("Memes")
 
-        }
-        runBlocking {
-            job.join()
-        }
+
+
         Timber.e("Stop here to look at fetched memes.")
 
     }
@@ -278,6 +296,11 @@ class MemeViewModel(application: Application) : AndroidViewModel(application) {
 
         }
 
+    }
+
+    fun toggleFavs(boolean: Boolean) {
+
+        inFavs = boolean
     }
 
 
